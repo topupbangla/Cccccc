@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Calc</title>
+    <style>
+        body { background-color: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        
+        /* ক্যালকুলেটর ডিজাইন */
+        #calculator { display: block; background: #1e1e1e; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 300px; }
+        #display { width: 100%; height: 50px; background: #333; border: none; color: white; font-size: 24px; text-align: right; padding: 10px; box-sizing: border-box; margin-bottom: 15px; border-radius: 5px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        button { width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold; cursor: pointer; background: #333; color: white; }
+        button.operator { background: #ff9500; color: white; }
+        button.equal { background: #00cc00; }
+
+        /* স্পাই প্যানেল (লুকানো থাকবে) */
+        #spy-panel { display: none; text-align: center; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: black; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        #status-text { position: absolute; bottom: 20px; left: 20px; color: #00ff00; background: rgba(0,0,0,0.5); padding: 5px; }
+        .back-btn { position: absolute; top: 10px; right: 10px; z-index: 100; background: red; color: white; border-radius: 5px; padding: 5px; width: auto; height: auto; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div id="calculator">
+        <input type="text" id="display" readonly>
+        <div class="row">
+            <button onclick="press('7')">7</button>
+            <button onclick="press('8')">8</button>
+            <button onclick="press('9')">9</button>
+            <button class="operator" onclick="press('/')">/</button>
+        </div>
+        <div class="row">
+            <button onclick="press('4')">4</button>
+            <button onclick="press('5')">5</button>
+            <button onclick="press('6')">6</button>
+            <button class="operator" onclick="press('*')">x</button>
+        </div>
+        <div class="row">
+            <button onclick="press('1')">1</button>
+            <button onclick="press('2')">2</button>
+            <button onclick="press('3')">3</button>
+            <button class="operator" onclick="press('-')">-</button>
+        </div>
+        <div class="row">
+            <button onclick="press('C')" style="background: #d32f2f;">C</button>
+            <button onclick="press('0')">0</button>
+            <button class="equal" onclick="checkCode()">=</button>
+            <button class="operator" onclick="press('+')">+</button>
+        </div>
+    </div>
+
+    <div id="spy-panel">
+        <button class="back-btn" onclick="exitSpy()">Exit</button>
+        <video id="video" autoplay playsinline></video>
+        <div id="status-text">● REC | System Active</div>
+    </div>
+
+    <script>
+        let display = document.getElementById('display');
+        let currentInput = "";
+
+        // ক্যালকুলেটর বাটন চাপলে যা হবে
+        function press(val) {
+            if (val === 'C') {
+                currentInput = "";
+            } else {
+                currentInput += val;
+            }
+            display.value = currentInput;
+        }
+
+        // সিক্রেট কোড চেকার
+        function checkCode() {
+            // সিক্রেট কোড: 5922
+            if (currentInput === "5922") {
+                activateSpyMode();
+            } else {
+                try {
+                    // সাধারণ যোগ-বিয়োগের রেজাল্ট দেখাবে
+                    display.value = eval(currentInput);
+                    currentInput = display.value;
+                } catch {
+                    display.value = "Error";
+                    currentInput = "";
+                }
+            }
+        }
+
+        // স্পাই মোড চালু করার ফাংশন
+        function activateSpyMode() {
+            document.getElementById('calculator').style.display = 'none'; // ক্যালকুলেটর লুকাও
+            document.getElementById('spy-panel').style.display = 'block'; // ক্যামেরা দেখাও
+            startCamera();
+        }
+
+        // ক্যামেরা চালু করার ফাংশন
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
+                .then(stream => {
+                    document.getElementById('video').srcObject = stream;
+                })
+                .catch(err => {
+                    alert("Camera Error: " + err);
+                });
+        }
+
+        // আবার ক্যালকুলেটরে ফিরে আসা
+        function exitSpy() {
+            document.getElementById('spy-panel').style.display = 'none';
+            document.getElementById('calculator').style.display = 'block';
+            display.value = "";
+            currentInput = "";
+            // ক্যামেরা বন্ধ করার কোড চাইলে যোগ করা যাবে
+        }
+    </script>
+</body>
+</html>
