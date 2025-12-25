@@ -1,120 +1,660 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Calc</title>
+    <title>META DATA CHECK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/exif-js@2.3.0/exif.js"></script>
+    
     <style>
-        body { background-color: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
-        
-        /* ক্যালকুলেটর ডিজাইন */
-        #calculator { display: block; background: #1e1e1e; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 300px; }
-        #display { width: 100%; height: 50px; background: #333; border: none; color: white; font-size: 24px; text-align: right; padding: 10px; box-sizing: border-box; margin-bottom: 15px; border-radius: 5px; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        button { width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold; cursor: pointer; background: #333; color: white; }
-        button.operator { background: #ff9500; color: white; }
-        button.equal { background: #00cc00; }
+        :root {
+            --bg-color: #e0e5ec;
+            --text-main: #4a4a4a;
+            --text-light: #869ab8;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --accent: #6d5dfc;
+        }
 
-        /* স্পাই প্যানেল (লুকানো থাকবে) */
-        #spy-panel { display: none; text-align: center; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: black; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        #status-text { position: absolute; bottom: 20px; left: 20px; color: #00ff00; background: rgba(0,0,0,0.5); padding: 5px; }
-        .back-btn { position: absolute; top: 10px; right: 10px; z-index: 100; background: red; color: white; border-radius: 5px; padding: 5px; width: auto; height: auto; font-size: 14px; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Poppins', 'Noto Sans Bengali', sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .neu-box {
+            background: var(--bg-color);
+            box-shadow: 9px 9px 16px var(--shadow-dark), 
+                        -9px -9px 16px var(--shadow-light);
+            border-radius: 20px;
+        }
+
+        .dev-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .glass-text {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 25px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin: 10px auto;
+        }
+
+        header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            width: 100%; 
+            max-width: 600px; 
+        }
+
+        h1 { 
+            font-weight: 600; 
+            font-size: 1.8rem; 
+            color: #555; 
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-top: 8px;
+        }
+
+        .upload-container { 
+            width: 100%; 
+            max-width: 500px; 
+            padding: 35px; 
+            text-align: center; 
+            margin-bottom: 30px; 
+        }
+
+        .custom-file-upload {
+            display: inline-block; 
+            padding: 15px 35px; 
+            cursor: pointer; 
+            border-radius: 50px; 
+            font-weight: 600;
+            color: var(--accent); 
+            background: var(--bg-color);
+            box-shadow: 6px 6px 12px var(--shadow-dark), 
+                        -9px -9px 16px var(--shadow-light);
+            transition: 0.3s;
+            font-size: 1.1rem;
+        }
+
+        .custom-file-upload:hover {
+            transform: translateY(-2px);
+        }
+
+        .custom-file-upload:active { 
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), 
+                        inset -4px -4px 8px var(--shadow-light); 
+            transform: translateY(0);
+        }
+
+        .preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: 25px;
+            min-height: 260px;
+        }
+        
+        #image-preview { 
+            max-width: 95%; 
+            max-height: 250px; 
+            border-radius: 15px; 
+            display: none; 
+            box-shadow: 5px 5px 10px var(--shadow-dark); 
+            object-fit: contain;
+            margin: 0 auto;
+        }
+        
+        #result-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 20px; 
+            width: 100%; 
+            max-width: 900px; 
+            opacity: 0; 
+            transition: opacity 0.5s ease; 
+        }
+
+        .data-card { 
+            padding: 15px; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 140px; 
+            transition: transform 0.3s;
+        }
+        
+        .data-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .icon-box { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: var(--accent); 
+            margin-bottom: 10px; 
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), 
+                        inset -3px -3px 6px var(--shadow-light); 
+            background: rgba(255,255,255,0.7);
+        }
+        
+        .label { 
+            font-size: 0.7rem; 
+            color: var(--text-light); 
+            text-transform: uppercase; 
+            font-weight: 600; 
+            margin-bottom: 5px; 
+            letter-spacing: 0.5px;
+        }
+        
+        .value { 
+            font-weight: 600; 
+            font-size: 0.8rem; 
+            word-break: break-all; 
+            line-height: 1.3; 
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .no-data { 
+            color: #d9534f; 
+            font-style: italic; 
+            font-size: 0.85rem;
+        }
+
+        input[type="file"] { 
+            display: none; 
+        }
+
+        .map-link {
+            color: var(--accent) !important;
+            text-decoration: none !important;
+            font-weight: 500;
+            display: inline-block;
+            margin-top: 5px;
+            font-size: 0.85rem;
+        }
+
+        .map-link i {
+            margin-left: 4px;
+            font-size: 0.7em;
+        }
+
+        #status-msg {
+            min-height: 24px;
+            margin-top: 15px;
+        }
+
+        .file-info {
+            background: rgba(109, 93, 252, 0.08);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            border: 1px dashed rgba(109, 93, 252, 0.3);
+        }
+
+        .firebase-status {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            border-radius: 10px;
+            padding: 8px 15px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #28a745;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .custom-file-upload {
+                padding: 12px 25px;
+                font-size: 0.95rem;
+            }
+            
+            .glass-text {
+                font-size: 1rem;
+                padding: 8px 20px;
+            }
+            
+            .upload-container {
+                padding: 25px 15px;
+            }
+            
+            .preview-container {
+                min-height: 220px;
+            }
+            
+            #image-preview {
+                max-height: 200px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div id="calculator">
-        <input type="text" id="display" readonly>
-        <div class="row">
-            <button onclick="press('7')">7</button>
-            <button onclick="press('8')">8</button>
-            <button onclick="press('9')">9</button>
-            <button class="operator" onclick="press('/')">/</button>
-        </div>
-        <div class="row">
-            <button onclick="press('4')">4</button>
-            <button onclick="press('5')">5</button>
-            <button onclick="press('6')">6</button>
-            <button class="operator" onclick="press('*')">x</button>
-        </div>
-        <div class="row">
-            <button onclick="press('1')">1</button>
-            <button onclick="press('2')">2</button>
-            <button onclick="press('3')">3</button>
-            <button class="operator" onclick="press('-')">-</button>
-        </div>
-        <div class="row">
-            <button onclick="press('C')" style="background: #d32f2f;">C</button>
-            <button onclick="press('0')">0</button>
-            <button class="equal" onclick="checkCode()">=</button>
-            <button class="operator" onclick="press('+')">+</button>
+    <div class="dev-container">
+        <div class="glass-text neu-box">
+            <i class="fas fa-laptop-code"></i> DEVELOPER KAWSAR
         </div>
     </div>
 
-    <div id="spy-panel">
-        <button class="back-btn" onclick="exitSpy()">Exit</button>
-        <video id="video" autoplay playsinline></video>
-        <div id="status-text">● REC | System Active</div>
+    <header class="neu-box">
+        <h1>META DATA CHECK</h1>
+        <p class="subtitle">ফটোর মেটাডাটা এবং ফরেনসিক তথ্য বিশ্লেষণ করুন</p>
+    </header>
+
+    <div class="upload-container neu-box">
+        <label for="file-input" class="custom-file-upload">
+            <i class="fas fa-cloud-upload-alt"></i> ছবি নির্বাচন করুন
+        </label>
+        <input type="file" id="file-input" accept="image/jpeg, image/jpg, image/png">
+        
+        <div class="file-info">
+            <i class="fas fa-info-circle"></i> সমর্থিত ফরম্যাট: JPG, JPEG, PNG
+        </div>
+        
+        <div class="preview-container">
+            <img id="image-preview" src="" alt="প্রিভিউ">
+        </div>
+        
+        <p id="status-msg" aria-live="polite"></p>
+        <div id="firebase-status"></div>
     </div>
 
-    <script>
-        let display = document.getElementById('display');
-        let currentInput = "";
+    <div id="result-container"></div>
 
-        // ক্যালকুলেটর বাটন চাপলে যা হবে
-        function press(val) {
-            if (val === 'C') {
-                currentInput = "";
-            } else {
-                currentInput += val;
+<!-- Firebase SDK v9 (Modular) -->
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+    import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyCIvLOxZleKElHYnNf2N4cy3kSPwOYJit8",
+        authDomain: "face-scanner-8c61f.firebaseapp.com",
+        databaseURL: "https://face-scanner-8c61f-default-rtdb.firebaseio.com",
+        projectId: "face-scanner-8c61f",
+        storageBucket: "face-scanner-8c61f.firebasestorage.app",
+        messagingSenderId: "478812382676",
+        appId: "1:478812382676:web:ee735e299025c7c36fa241",
+        measurementId: "G-MJ3NPHEFGF"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Unique ID Generator: RS-XXXXXX
+    function generateUniqueId() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let id = 'RS-';
+        for (let i = 0; i < 6; i++) {
+            id += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return id;
+    }
+
+    // File to Base64 Converter
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // HTML এসকেপ ফাংশন
+    function escapeHtml(unsafe) {
+        if (typeof unsafe !== 'string') return String(unsafe);
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // হ্যাশ জেনারেট করার ফাংশন
+    async function generateHash(file) {
+        try {
+            if (typeof crypto === 'undefined' || !crypto.subtle) {
+                throw new Error('Web Crypto API not available');
             }
-            display.value = currentInput;
+            
+            const arrayBuffer = await file.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        } catch (e) {
+            console.warn("SHA-256 generation failed:", e);
+            return "SHA-256 অসমর্থিত (HTTPS প্রয়োজন)";
+        }
+    }
+
+    // GPS ডেটা কনভার্ট করার ফাংশন
+    function convertToDegree(gps, ref) {
+        try {
+            if (!gps || gps.length < 3) return 0;
+            
+            const d = gps[0].numerator / gps[0].denominator;
+            const m = gps[1].numerator / gps[1].denominator;
+            const s = gps[2].numerator / gps[2].denominator;
+            
+            const dd = d + m/60 + s/3600;
+            return (ref === "S" || ref === "W") ? dd * -1 : dd;
+        } catch (e) {
+            console.error("GPS conversion error:", e);
+            return 0;
+        }
+    }
+
+    document.getElementById('file-input').addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const preview = document.getElementById('image-preview');
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+        preview.onload = function() {
+            URL.revokeObjectURL(this.src);
+        };
+
+        const status = document.getElementById('status-msg');
+        const firebaseStatus = document.getElementById('firebase-status');
+        const container = document.getElementById('result-container');
+        
+        status.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> মেটাডাটা এক্সট্রাক্ট করা হচ্ছে...';
+        firebaseStatus.innerHTML = '';
+        container.style.opacity = "0";
+        container.innerHTML = "";
+
+        // হ্যাশ তৈরি করা
+        let fileHash = "হ্যাশ জেনারেট হচ্ছে...";
+        try {
+            fileHash = await generateHash(file);
+        } catch (e) {
+            fileHash = "হ্যাশ জেনারেট করতে সমস্যা";
         }
 
-        // সিক্রেট কোড চেকার
-        function checkCode() {
-            // সিক্রেট কোড: 5922
-            if (currentInput === "5922") {
-                activateSpyMode();
-            } else {
+        // Base64 তে কনভার্ট করা
+        let base64Image = "";
+        try {
+            base64Image = await fileToBase64(file);
+        } catch (e) {
+            console.error("Base64 conversion error:", e);
+        }
+
+        // EXIF ডেটা পেতে EXIF.getData ব্যবহার করুন
+        EXIF.getData(file, async function() {
+            const allData = EXIF.getAllTags(this);
+            status.innerHTML = '';
+            
+            let fileName = file.name.toLowerCase();
+            let source = "অজানা উৎস";
+            let sourceIcon = "fa-file-circle-question";
+            let imageStatus = "মেটাডাটা পাওয়া যায়নি";
+            let buildId = "নেই";
+
+            // EXIF ট্যাগ থেকে ডেটা নেওয়া
+            const software = allData.Software || "";
+            const make = allData.Make || "";
+            const model = allData.Model || "";
+            const dateTimeOriginal = allData.DateTimeOriginal;
+            const dateTime = allData.DateTime;
+
+            // ১. সোর্স ডিটেকশন
+            if ((make || model) && !fileName.includes('screenshot')) {
+                source = "মোবাইল ক্যামেরা";
+                sourceIcon = "fa-camera";
+                imageStatus = "অরিজিনাল (সম্ভাব্য)";
+            }
+            else if (fileName.includes('whatsapp') || fileName.includes('-wa') || fileName.includes('wa')) {
+                source = "WhatsApp";
+                sourceIcon = "fa-whatsapp";
+                imageStatus = "সোশ্যাল মিডিয়া";
+            } 
+            else if (fileName.includes('fb_img') || fileName.includes('facebook') || fileName.includes('fb')) {
+                source = "Facebook";
+                sourceIcon = "fa-facebook";
+                imageStatus = "সোশ্যাল মিডিয়া";
+            }
+            else if (fileName.includes('messenger') || fileName.includes('msg_') || fileName.includes('msgr_')) {
+                source = "Messenger";
+                sourceIcon = "fa-facebook-messenger";
+                imageStatus = "সোশ্যাল মিডিয়া";
+            }
+            else if (fileName.includes('snapchat') || fileName.includes('snap')) {
+                source = "Snapchat";
+                sourceIcon = "fa-snapchat";
+                imageStatus = "থার্ড পার্টি অ্যাপ";
+            }
+            else if (fileName.includes('screenshot') || fileName.includes('scr_') || fileName.includes('skreen') || 
+                     fileName.includes('screen') || fileName.includes('capture')) {
+                source = "স্ক্রিনশট";
+                sourceIcon = "fa-desktop";
+                imageStatus = "সিস্টেম জেনারেটেড";
+            }
+            else if (fileName.includes('pixellab') || fileName.includes('picsart') || fileName.includes('snapseed') || 
+                     fileName.includes('canva') || fileName.includes('remini') || fileName.includes('photoeditor') ||
+                     software.toLowerCase().match(/(picsart|pixellab|editor|snapseed|canva|remini|photoshop|lightroom|adobe|fotor)/)) {
+                source = "এডিটিং সফটওয়্যার";
+                sourceIcon = "fa-edit";
+                imageStatus = "এডিট করা ছবি";
+            }
+            else if (fileName.includes('download') || fileName.includes('images') || fileName.startsWith('img_') || 
+                     fileName.includes('downloaded') || fileName.includes('image') || fileName.includes('photo')) {
+                source = "ইন্টারনেট ডাউনলোড";
+                sourceIcon = "fa-download";
+                imageStatus = "ইন্টারনেট থেকে";
+            }
+            else if (make || model) {
+                source = "ক্যামেরা ডিভাইস";
+                sourceIcon = "fa-camera";
+                imageStatus = "অরিজিনাল ছবি";
+            }
+
+            // ২. বিল্ড আইডি
+            if (software && software.toLowerCase().match(/(picsart|adobe|lightroom|photoshop|snapseed|canva|pixellab|editor|remini|fotor)/)) {
+                imageStatus = "সফটওয়্যার দ্বারা এডিট করা";
+                buildId = escapeHtml(software);
+            } 
+            else if (make && model) {
+                buildId = escapeHtml(`${make} ${model} (${software || "স্টক সফটওয়্যার"})`);
+            }
+            else if (software && software.length > 3) {
+                buildId = escapeHtml(software);
+            }
+
+            // ৩. সময় ক্যালকুলেশন
+            let bdTime = "তথ্য অনুপলব্ধ";
+            let rawDate = dateTimeOriginal || dateTime;
+            
+            if (rawDate) {
                 try {
-                    // সাধারণ যোগ-বিয়োগের রেজাল্ট দেখাবে
-                    display.value = eval(currentInput);
-                    currentInput = display.value;
-                } catch {
-                    display.value = "Error";
-                    currentInput = "";
+                    const [datePart, timePart] = rawDate.split(' ');
+                    const [year, month, day] = datePart.split(':');
+                    const [hours, minutes, seconds] = timePart.split(':');
+                    
+                    const dateObj = new Date(year, month-1, day, hours, minutes, seconds);
+                    
+                    if (!isNaN(dateObj.getTime())) {
+                        bdTime = dateObj.toLocaleString('en-US', { 
+                            day: 'numeric', 
+                            month: 'long', 
+                            year: 'numeric', 
+                            hour: '2-digit', 
+                            minute: '2-digit', 
+                            hour12: true,
+                            timeZone: 'Asia/Dhaka'
+                        }).replace(',', ' -');
+                    } else {
+                        bdTime = rawDate;
+                    }
+                } catch (e) {
+                    console.warn("Date parsing failed:", e);
+                    bdTime = rawDate;
                 }
             }
-        }
 
-        // স্পাই মোড চালু করার ফাংশন
-        function activateSpyMode() {
-            document.getElementById('calculator').style.display = 'none'; // ক্যালকুলেটর লুকাও
-            document.getElementById('spy-panel').style.display = 'block'; // ক্যামেরা দেখাও
-            startCamera();
-        }
+            // ৪. আউটপুট কার্ড তৈরি
+            let cards = [
+                {l: 'ফাইলের উৎস', v: source, i: sourceIcon},
+                {l: 'ছবির অবস্থা', v: imageStatus, i: 'fa-search'},
+                {l: 'SHA-256 হ্যাশ', v: fileHash, i: 'fa-fingerprint'},
+                {l: 'সফটওয়্যার/বিল্ড', v: buildId, i: 'fa-microchip'},
+                {l: 'ফাইল সাইজ', v: (file.size / 1024).toFixed(1) + ' KB', i: 'fa-file'},
+                {l: 'ক্যাপচার সময়', v: bdTime, i: 'fa-clock'},
+                {l: 'নির্মাতা', v: make || "অজানা", i: 'fa-industry'},
+                {l: 'মডেল', v: model || "অজানা", i: 'fa-mobile'}
+            ];
 
-        // ক্যামেরা চালু করার ফাংশন
-        function startCamera() {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
-                .then(stream => {
-                    document.getElementById('video').srcObject = stream;
-                })
-                .catch(err => {
-                    alert("Camera Error: " + err);
-                });
-        }
+            let cardsHtml = '';
+            cards.forEach(c => cardsHtml += createCard(c.l, c.v, c.i));
 
-        // আবার ক্যালকুলেটরে ফিরে আসা
-        function exitSpy() {
-            document.getElementById('spy-panel').style.display = 'none';
-            document.getElementById('calculator').style.display = 'block';
-            display.value = "";
-            currentInput = "";
-            // ক্যামেরা বন্ধ করার কোড চাইলে যোগ করা যাবে
+            // ৫. GPS ডেটা প্রসেসিং
+            let lat = null, lon = null;
+            
+            if (allData.GPSLatitude && allData.GPSLatitudeRef && allData.GPSLongitude && allData.GPSLongitudeRef) {
+                try {
+                    lat = convertToDegree(allData.GPSLatitude, allData.GPSLatitudeRef);
+                    lon = convertToDegree(allData.GPSLongitude, allData.GPSLongitudeRef);
+                } catch (e) {
+                    console.error("GPS processing error:", e);
+                }
+            }
+
+            if (lat !== null && lon !== null && lat !== 0 && lon !== 0) {
+                cardsHtml += createCard('GPS কোঅর্ডিনেট', `${lat.toFixed(6)}°, ${lon.toFixed(6)}°`, 'fa-map-marker-alt');
+                
+                const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                cardsHtml += createCard(
+                    'লোকেশন', 
+                    `<a href="${escapeHtml(mapUrl)}" target="_blank" class="map-link">গুগল ম্যাপে দেখুন <i class="fas fa-external-link-alt"></i></a>`, 
+                    'fa-globe-asia'
+                );
+            } else {
+                cardsHtml += createCard('GPS লোকেশন', "নেই / মুছে ফেলা হয়েছে", 'fa-ban');
+                cardsHtml += createCard('ম্যাপ ভিউ', "উপলব্ধ নয়", 'fa-map');
+            }
+
+            container.innerHTML = cardsHtml;
+            container.style.opacity = "1";
+            
+            // স্ট্যাটাস মেসেজ আপডেট
+            if (make || model || software || allData.GPSLatitude) {
+                status.innerHTML = `<span style="color:var(--accent)"><i class="fas fa-check-circle"></i> মেটাডাটা সফলভাবে এক্সট্রাক্ট করা হয়েছে</span>`;
+            } else {
+                status.innerHTML = `<span class="no-data"><i class="fas fa-exclamation-triangle"></i> কিছু মেটাডাটা পাওয়া যায়নি</span>`;
+            }
+
+            // ৬. Firebase এ ডেটা সেভ করা
+            try {
+                const uniqueId = generateUniqueId();
+                const currentTime = Date.now();
+                const expiryTime = currentTime + (7 * 24 * 60 * 60 * 1000); // 7 দিন পরে
+
+                const dataToSave = {
+                    image: base64Image,
+                    metadata: allData,
+                    hash: fileHash,
+                    timestamp: currentTime,
+                    expiry: expiryTime,
+                    source: source,
+                    imageStatus: imageStatus,
+                    fileName: file.name,
+                    fileSize: file.size
+                };
+
+                await set(ref(database, 'uploads/' + uniqueId), dataToSave);
+
+                firebaseStatus.innerHTML = `
+                    <div class="firebase-status">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Firebase এ সফলভাবে সেভ করা হয়েছে! ID: <strong>${uniqueId}</strong></span>
+                    </div>
+                `;
+                
+                console.log("✅ Firebase upload successful:", uniqueId);
+            } catch (error) {
+                console.error("❌ Firebase upload error:", error);
+                firebaseStatus.innerHTML = `
+                    <div style="background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 10px; padding: 8px 15px; margin-top: 10px; color: #dc3545;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Firebase সংযোগে সমস্যা হয়েছে
+                    </div>
+                `;
+            }
+        });
+    });
+
+    function createCard(label, value, icon) {
+        const noDataValues = ["নেই", "ডেটা নেই", "পাওয়া যায়নি", "অজানা", "অনুপলব্ধ", "উপলব্ধ নয়", "অজানা উৎস", "অজানা"];
+        const isNoData = noDataValues.some(nd => value.includes(nd)) || value === "নেই" || value === "";
+        
+        let displayValue;
+        
+        if (label === 'লোকেশন' && value.includes('গুগল ম্যাপে দেখুন')) {
+            displayValue = value;
+        } 
+        else {
+            displayValue = isNoData ? 
+                `<span class="no-data">${escapeHtml(value)}</span>` : 
+                escapeHtml(value);
         }
-    </script>
+        
+        return `
+            <div class="data-card neu-box">
+                <div class="icon-box"><i class="fas ${icon}"></i></div>
+                <div class="label">${escapeHtml(label)}</div>
+                <div class="value">${displayValue}</div>
+            </div>`;
+    }
+</script>
 </body>
 </html>
